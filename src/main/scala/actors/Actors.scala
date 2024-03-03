@@ -2,13 +2,18 @@ package actors
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
 import db.Database._
-import models.MobileForm
+import models.{MobileForm, UserForm}
 
 object Actors {
 
   implicit val actorSystem: ActorSystem = ActorSystem("system")
 
   object MobileDbActorMessages {
+
+    case object GetAllUsers
+    case class GetUserWithMobile(userId: Int)
+    case class CreateUser(userForm: UserForm)
+    case class UserCreated(userId: Int)
     case class CreateMobile(mobile: MobileForm)
 
     case class MobileCreated(id: Int)
@@ -47,7 +52,13 @@ object Actors {
       case UpdateById(id, newPriceToUpdate) =>
         log.info(s"updating by id: $id")
         sender() ! updateById(id, newPriceToUpdate)
-    }
+      case CreateUser(user) =>
+        sender() ! UserCreated(createNewUser(user).head.userId)
+      case GetAllUsers =>
+        sender() ! getAllUsers
+      case GetUserWithMobile(userId) =>
+        sender() ! getUserWithMobile(userId)
+     }
   }
 
   val mobileDbActor: ActorRef = actorSystem.actorOf(Props[MobileDbActor], "mobileDb")

@@ -9,21 +9,20 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.pattern.ask
 import akka.util.Timeout
-import models.{Mobile, MobileForm, MobileUpdateForm}
+import models._
 import spray.json._
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.language.{existentials, postfixOps}
 
-trait RequestError
-
-case class InvalidId(message: String) extends RequestError
-
 trait MobileJsonProtocol extends DefaultJsonProtocol {
   implicit val mobileFormat: RootJsonFormat[Mobile] = jsonFormat4(Mobile)
-  implicit val mobileFormFormat: RootJsonFormat[MobileForm] = jsonFormat3(MobileForm)
+  implicit val mobileFormFormat: RootJsonFormat[MobileForm] = jsonFormat4(MobileForm)
   implicit val mobileUpdateFormFormat: RootJsonFormat[MobileUpdateForm] = jsonFormat1(MobileUpdateForm)
+  implicit val userFormFormat: RootJsonFormat[UserForm] = jsonFormat1(UserForm)
+  implicit val userFormat: RootJsonFormat[User] = jsonFormat2(User)
+  implicit val userWithMobileFormat: RootJsonFormat[UserWithMobile] = jsonFormat1(UserWithMobile)
 }
 
 object Routes extends MobileJsonProtocol {
@@ -55,10 +54,62 @@ object Routes extends MobileJsonProtocol {
     }
   }
 
+  private def createMobile(mobileForm: MobileForm): Future[HttpEntity.Strict] = {
+    val futureMobileCreated = (mobileDbActor ? CreateMobile(mobileForm)).mapTo[MobileCreated]
+
+    for {
+      mobileCreated <- futureMobileCreated
+    } yield {
+      HttpEntity(
+        ContentTypes.`text/plain(UTF-8)`,
+        s"New mobile is added into the db with id: ${mobileCreated.id}"
+      )
+    }
+  }
+
+  private def createUser(usrForm: UserForm): Future[HttpEntity.Strict] = {
+    val futureUserCreated = (mobileDbActor ? CreateUser(usrForm)).mapTo[UserCreated]
+    for {
+      userCreated <- futureUserCreated
+    } yield {
+      HttpEntity(
+        ContentTypes.`text/plain(UTF-8)`,
+        s"New user is added into the db with id: ${userCreated.userId}"
+      )
+    }
+
+  }
+
+  def getAllUsers: Future[HttpEntity.Strict] = {
+    val futureUser = (mobileDbActor ? GetAllUsers).mapTo[List[User]]
+    for {
+      user <- futureUser
+    } yield {
+      HttpEntity(
+        ContentTypes.`application/json`,
+        user.toJson.prettyPrint
+      )
+    }
+
+  }
+
+  private def getUsersWithMobile(userId: Int): Future[HttpEntity.Strict] = {
+    val futureListOfUserWithMobile = (mobileDbActor ? GetUserWithMobile(userId)).mapTo[List[UserWithMobile]]
+    for {
+      user <- futureListOfUserWithMobile
+    } yield {
+      HttpEntity(
+        ContentTypes.`application/json`,
+        user.toJson.prettyPrint
+      )
+    }
+
+  }
+
 
   implicit val defaultTimeout: Timeout = Timeout(2 seconds)
 
-  val routes: Route =
+  private val routes: Route =
     path("api" / "mobile" / IntNumber) { (id: Int) =>
       get {
         complete(
@@ -73,6 +124,31 @@ object Routes extends MobileJsonProtocol {
             StatusCodes.OK,
             getAllMobiles
           )
+        } ~
+          post {
+            entity(as[MobileForm]) { mobileFormData =>
+              complete(StatusCodes.OK,
+                createMobile(mobileFormData)
+              )
+            }
+          }
+      } ~
+      path("api" / "user") {
+        get {
+          complete(StatusCodes.OK, getAllUsers)
+        } ~
+          post {
+            entity(as[UserForm]) { user =>
+              complete(StatusCodes.OK,
+                createUser(user)
+              )
+
+            }
+          }
+      } ~
+      path("api" / "user" / "mobile" / IntNumber) { userId =>
+        get {
+          complete(StatusCodes.OK, getUsersWithMobile(userId))
         }
       }
 

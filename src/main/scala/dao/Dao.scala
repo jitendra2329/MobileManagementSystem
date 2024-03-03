@@ -1,6 +1,6 @@
 package dao
 
-import models.{Mobile, MobileForm}
+import models.{Mobile, MobileForm, User, UserForm, UserWithMobile}
 
 trait Dao {
 
@@ -16,4 +16,9 @@ trait Dao {
 
   def updateById(id: Int, newPriceToUpdate: Double): Option[String]
 
+  def createNewUser(user: UserForm): List[User]
+
+  def getAllUsers: List[User]
+
+  def getUserWithMobile(userId: Int): List[UserWithMobile]
 }
