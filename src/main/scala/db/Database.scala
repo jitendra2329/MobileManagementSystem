@@ -48,7 +48,7 @@ object Database extends Dao {
       println("Inside delete by id method.")
       SQL(BaseQuery.deleteByIdQuery(id)).executeUpdate()
     }) match {
-      case Failure(ex) =>
+      case Failure(_) =>
         None
       case Success(value) => if (value != 0) Some(s"$value row Deleted!") else Some("No record exists!")
     }
@@ -59,7 +59,7 @@ object Database extends Dao {
       println("Inside deleteAll method.")
       SQL(BaseQuery.deleteAllQuery()).executeUpdate()
     }) match {
-      case Failure(ex) =>
+      case Failure(_) =>
         None
       case Success(_) => Some("All records Deleted!")
     }
@@ -74,7 +74,7 @@ object Database extends Dao {
           .executeUpdate()
       }
     } match {
-      case Failure(ex) =>
+      case Failure(_) =>
         None
       case Success(value) => Some(s"$value row Updated")
     }

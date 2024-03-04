@@ -103,7 +103,36 @@ object Routes extends MobileJsonProtocol {
         user.toJson.prettyPrint
       )
     }
+  }
 
+  private def deleteById(mobileId: Int): Future[HttpEntity.Strict] = {
+    val optionalString = (mobileDbActor ? DeleteById(mobileId)).mapTo[Option[String]]
+
+    for {
+      string <- optionalString
+    } yield string match {
+      case Some(stringValue) =>
+        HttpEntity(
+          ContentTypes.`text/plain(UTF-8)`,
+          stringValue
+        )
+      case None =>
+        HttpEntity(
+          ContentTypes.`text/plain(UTF-8)`,
+          "No row deleted."
+        )
+    }
+  }
+
+  private def updateById(mobileId: Int, priceToUpdate: Double): Future[HttpEntity.Strict] = {
+    val futureOptionalString = (mobileDbActor ? UpdateById(mobileId, priceToUpdate)).mapTo[Option[String]]
+    for {
+      optionalString <- futureOptionalString
+    } yield optionalString match {
+      case Some(value) =>
+        HttpEntity(ContentTypes.`text/plain(UTF-8)`, value)
+      case None => HttpEntity(ContentTypes.`text/plain(UTF-8)`, "No row updated.")
+    }
   }
 
 
@@ -116,20 +145,23 @@ object Routes extends MobileJsonProtocol {
           StatusCodes.OK,
           getMobile(id)
         )
-      }
+      } ~
+        delete {
+          complete(StatusCodes.OK, deleteById(id))
+        } ~
+        put {
+          entity(as[MobileUpdateForm]) { data =>
+            complete(StatusCodes.OK, updateById(id, data.price))
+          }
+        }
     } ~
       path("api" / "mobile") {
         get {
-          complete(
-            StatusCodes.OK,
-            getAllMobiles
-          )
+          complete(StatusCodes.OK, getAllMobiles)
         } ~
           post {
             entity(as[MobileForm]) { mobileFormData =>
-              complete(StatusCodes.OK,
-                createMobile(mobileFormData)
-              )
+              complete(StatusCodes.OK, createMobile(mobileFormData))
             }
           }
       } ~
