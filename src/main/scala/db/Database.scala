@@ -13,7 +13,7 @@ object Database extends Dao {
 
   override def createNewUser(user: UserForm): List[User] = {
     val result: List[User] = DB readOnly { implicit session =>
-      SQL(BaseQuery.userInsertQuery(user.userName)).map(rs => Parser.parserUser(rs)).list()
+      SQL(BaseQuery.userInsertQuery(user.userName)).map(rs => Parser.parseUser(rs)).list()
     }
     result
   }
@@ -82,15 +82,15 @@ object Database extends Dao {
 
   override def getAllUsers: List[User] = {
     val result: List[User] = DB readOnly { implicit session =>
-      val res = SQL(BaseQuery.userSelectQuery()).map(rs => Parser.parserUser(rs)).list()
+      val res = SQL(BaseQuery.userSelectQuery()).map(rs => Parser.parseUser(rs)).list()
       res
     }
     result
   }
 
-  override def getUserWithMobile(userId: Int): List[UserWithMobile] = {
-    val result: List[UserWithMobile] = DB readOnly { implicit session =>
-      val res = SQL(BaseQuery.userWithMobileSelectQuery(userId)).map(rs => UserWithMobile(Parser.parseMobile(rs))).list()
+  override def getUsersMobile(userId: Int): List[UsersMobile] = {
+    val result: List[UsersMobile] = DB readOnly { implicit session =>
+      val res = SQL(BaseQuery.userWithMobileSelectQuery(userId)).map(rs => Parser.parseUsersMobile(rs)).list()
       res
     }
     result
@@ -159,7 +159,6 @@ object Database extends Dao {
          |m.mobile_id,
          |m.mobile_name,
          |m.mobile_model,
-         |m.mobile_price
          |FROM mobiles m
          |JOIN users u
          |ON u.user_id = m.user_id

@@ -12,4 +12,4 @@ case class UserForm(userName: String)
 
 case class User(userId: Int, userName: String)
 
-case class UserWithMobile(mobile: Mobile)
+case class UsersMobile(mobileId: Int, mobileName: String, mobileModel: String)

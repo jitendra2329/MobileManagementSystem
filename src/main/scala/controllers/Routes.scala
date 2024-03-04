@@ -1,6 +1,7 @@
 package controllers
 
 import actors.Actors.MobileDbActorMessages._
+import actors.Actors.actorSystem.dispatcher
 import actors.Actors.{actorSystem, mobileDbActor}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
@@ -16,21 +17,38 @@ import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.language.{existentials, postfixOps}
 
-trait MobileJsonProtocol extends DefaultJsonProtocol {
-  implicit val mobileFormat: RootJsonFormat[Mobile] = jsonFormat4(Mobile)
-  implicit val mobileFormFormat: RootJsonFormat[MobileForm] = jsonFormat4(MobileForm)
-  implicit val mobileUpdateFormFormat: RootJsonFormat[MobileUpdateForm] = jsonFormat1(MobileUpdateForm)
-  implicit val userFormFormat: RootJsonFormat[UserForm] = jsonFormat1(UserForm)
-  implicit val userFormat: RootJsonFormat[User] = jsonFormat2(User)
-  implicit val userWithMobileFormat: RootJsonFormat[UserWithMobile] = jsonFormat1(UserWithMobile)
+trait MobileRoutes {
+  def getMobile(id: Int): Future[HttpEntity.Strict]
+
+  def getAllMobiles: Future[HttpEntity.Strict]
+
+  def createMobile(mobileForm: MobileForm): Future[HttpEntity.Strict]
+
+  def createUser(usrForm: UserForm): Future[HttpEntity.Strict]
+
+  def getAllUsers: Future[HttpEntity.Strict]
+
+  def getUsersWithMobile(userId: Int): Future[HttpEntity.Strict]
+
+  def deleteById(mobileId: Int): Future[HttpEntity.Strict]
+
+  def updateById(mobileId: Int, priceToUpdate: Double): Future[HttpEntity.Strict]
+
 }
 
-object Routes extends MobileJsonProtocol {
+private object MobileRoutesImplementation extends DefaultJsonProtocol {
+  implicit val mobileFormat: RootJsonFormat[Mobile] = jsonFormat4(Mobile)
+  implicit val userFormat: RootJsonFormat[User] = jsonFormat2(User)
+  implicit val userWithMobileFormat: RootJsonFormat[UsersMobile] = jsonFormat3(UsersMobile)
+}
 
-  import actorSystem.dispatcher
+class MobileRoutesImplementation extends MobileRoutes {
 
+  implicit val defaultTimeout: Timeout = Timeout(2 seconds)
 
-  private def getMobile(id: Int): Future[HttpEntity.Strict] = {
+  import MobileRoutesImplementation._
+
+  override def getMobile(id: Int): Future[HttpEntity.Strict] = {
     val futureListMobile = (mobileDbActor ? GetMobileById(id)).mapTo[List[Mobile]]
     for {
       mobileList <- futureListMobile
@@ -42,7 +60,7 @@ object Routes extends MobileJsonProtocol {
     }
   }
 
-  private def getAllMobiles: Future[HttpEntity.Strict] = {
+  override def getAllMobiles: Future[HttpEntity.Strict] = {
     val futureListMobile = (mobileDbActor ? GetAllMobiles).mapTo[List[Mobile]]
     for {
       mobileList <- futureListMobile
@@ -54,7 +72,7 @@ object Routes extends MobileJsonProtocol {
     }
   }
 
-  private def createMobile(mobileForm: MobileForm): Future[HttpEntity.Strict] = {
+  override def createMobile(mobileForm: MobileForm): Future[HttpEntity.Strict] = {
     val futureMobileCreated = (mobileDbActor ? CreateMobile(mobileForm)).mapTo[MobileCreated]
 
     for {
@@ -67,7 +85,7 @@ object Routes extends MobileJsonProtocol {
     }
   }
 
-  private def createUser(usrForm: UserForm): Future[HttpEntity.Strict] = {
+  override def createUser(usrForm: UserForm): Future[HttpEntity.Strict] = {
     val futureUserCreated = (mobileDbActor ? CreateUser(usrForm)).mapTo[UserCreated]
     for {
       userCreated <- futureUserCreated
@@ -80,7 +98,7 @@ object Routes extends MobileJsonProtocol {
 
   }
 
-  def getAllUsers: Future[HttpEntity.Strict] = {
+  override def getAllUsers: Future[HttpEntity.Strict] = {
     val futureUser = (mobileDbActor ? GetAllUsers).mapTo[List[User]]
     for {
       user <- futureUser
@@ -90,11 +108,10 @@ object Routes extends MobileJsonProtocol {
         user.toJson.prettyPrint
       )
     }
-
   }
 
-  private def getUsersWithMobile(userId: Int): Future[HttpEntity.Strict] = {
-    val futureListOfUserWithMobile = (mobileDbActor ? GetUserWithMobile(userId)).mapTo[List[UserWithMobile]]
+  override def getUsersWithMobile(userId: Int): Future[HttpEntity.Strict] = {
+    val futureListOfUserWithMobile = (mobileDbActor ? GetUsersMobile(userId)).mapTo[List[UsersMobile]]
     for {
       user <- futureListOfUserWithMobile
     } yield {
@@ -105,7 +122,7 @@ object Routes extends MobileJsonProtocol {
     }
   }
 
-  private def deleteById(mobileId: Int): Future[HttpEntity.Strict] = {
+  override def deleteById(mobileId: Int): Future[HttpEntity.Strict] = {
     val optionalString = (mobileDbActor ? DeleteById(mobileId)).mapTo[Option[String]]
 
     for {
@@ -124,7 +141,7 @@ object Routes extends MobileJsonProtocol {
     }
   }
 
-  private def updateById(mobileId: Int, priceToUpdate: Double): Future[HttpEntity.Strict] = {
+  override def updateById(mobileId: Int, priceToUpdate: Double): Future[HttpEntity.Strict] = {
     val futureOptionalString = (mobileDbActor ? UpdateById(mobileId, priceToUpdate)).mapTo[Option[String]]
     for {
       optionalString <- futureOptionalString
@@ -134,45 +151,55 @@ object Routes extends MobileJsonProtocol {
       case None => HttpEntity(ContentTypes.`text/plain(UTF-8)`, "No row updated.")
     }
   }
+}
 
 
-  implicit val defaultTimeout: Timeout = Timeout(2 seconds)
+object Routes extends DefaultJsonProtocol {
+  implicit val mobileFormFormat: RootJsonFormat[MobileForm] = jsonFormat4(MobileForm)
+  implicit val mobileUpdateFormFormat: RootJsonFormat[MobileUpdateForm] = jsonFormat1(MobileUpdateForm)
+  implicit val userFormFormat: RootJsonFormat[UserForm] = jsonFormat1(UserForm)
+}
+
+class Routes {
+
+  private val mobileRoutes: MobileRoutes = new MobileRoutesImplementation
+  import Routes._
 
   private val routes: Route =
     path("api" / "mobile" / IntNumber) { (id: Int) =>
       get {
         complete(
           StatusCodes.OK,
-          getMobile(id)
+          mobileRoutes.getMobile(id)
         )
       } ~
         delete {
-          complete(StatusCodes.OK, deleteById(id))
+          complete(StatusCodes.OK, mobileRoutes.deleteById(id))
         } ~
         put {
           entity(as[MobileUpdateForm]) { data =>
-            complete(StatusCodes.OK, updateById(id, data.price))
+            complete(StatusCodes.OK, mobileRoutes.updateById(id, data.price))
           }
         }
     } ~
       path("api" / "mobile") {
         get {
-          complete(StatusCodes.OK, getAllMobiles)
+          complete(StatusCodes.OK, mobileRoutes.getAllMobiles)
         } ~
           post {
             entity(as[MobileForm]) { mobileFormData =>
-              complete(StatusCodes.OK, createMobile(mobileFormData))
+              complete(StatusCodes.OK, mobileRoutes.createMobile(mobileFormData))
             }
           }
       } ~
       path("api" / "user") {
         get {
-          complete(StatusCodes.OK, getAllUsers)
+          complete(StatusCodes.OK, mobileRoutes.getAllUsers)
         } ~
           post {
             entity(as[UserForm]) { user =>
               complete(StatusCodes.OK,
-                createUser(user)
+                mobileRoutes.createUser(user)
               )
 
             }
@@ -180,7 +207,7 @@ object Routes extends MobileJsonProtocol {
       } ~
       path("api" / "user" / "mobile" / IntNumber) { userId =>
         get {
-          complete(StatusCodes.OK, getUsersWithMobile(userId))
+          complete(StatusCodes.OK, mobileRoutes.getUsersWithMobile(userId))
         }
       }
 

@@ -1,6 +1,6 @@
 package dao
 
-import models.{Mobile, MobileForm, User, UserForm, UserWithMobile}
+import models.{Mobile, MobileForm, User, UserForm, UsersMobile}
 
 trait Dao {
 
@@ -20,5 +20,5 @@ trait Dao {
 
   def getAllUsers: List[User]
 
-  def getUserWithMobile(userId: Int): List[UserWithMobile]
+  def getUsersMobile(userId: Int): List[UsersMobile]
 }

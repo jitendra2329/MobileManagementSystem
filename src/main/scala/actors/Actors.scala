@@ -11,7 +11,7 @@ object Actors {
   object MobileDbActorMessages {
 
     case object GetAllUsers
-    case class GetUserWithMobile(userId: Int)
+    case class GetUsersMobile(userId: Int)
     case class CreateUser(userForm: UserForm)
     case class UserCreated(userId: Int)
     case class CreateMobile(mobile: MobileForm)
@@ -56,8 +56,8 @@ object Actors {
         sender() ! UserCreated(createNewUser(user).head.userId)
       case GetAllUsers =>
         sender() ! getAllUsers
-      case GetUserWithMobile(userId) =>
-        sender() ! getUserWithMobile(userId)
+      case GetUsersMobile(userId) =>
+        sender() ! getUsersMobile(userId)
      }
   }
 

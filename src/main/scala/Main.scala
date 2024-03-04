@@ -6,14 +6,13 @@ import db.Connection._
 
 import scala.io.StdIn
 
+
 object Main extends App {
-
   private val flywayMigration = new Flyway(DbConfig(dbConfig.driver, dbConfig.url, dbConfig.user, dbConfig.pass))
-
-
   flywayMigration.migrateDatabase()
 
-  private val server = Routes.server
+  val routes = new Routes
+  val server = routes.server
   println("Server is running on http://localhost:9000")
   StdIn.readLine()
 
@@ -22,5 +21,8 @@ object Main extends App {
   server
     .flatMap(_.unbind())
     .onComplete(_ => actorSystem.terminate())
-
 }
+
+
+
+
