@@ -1,6 +1,6 @@
 package dao
 
-import models.{Mobile, MobileForm, User, UserForm, UsersMobile}
+import models._
 
 trait Dao {
 

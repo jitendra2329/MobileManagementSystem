@@ -7,7 +7,7 @@ import scalikejdbc.{DB, DBSession, SQL}
 
 import scala.util.{Failure, Success, Try}
 
-object Database extends Dao {
+class Database extends Dao {
 
   implicit val session: DBSession = Connection.session
 
@@ -158,7 +158,7 @@ object Database extends Dao {
       s"""SELECT
          |m.mobile_id,
          |m.mobile_name,
-         |m.mobile_model,
+         |m.mobile_model
          |FROM mobiles m
          |JOIN users u
          |ON u.user_id = m.user_id
@@ -167,12 +167,12 @@ object Database extends Dao {
     }
 
     def deleteByIdQuery(id: Int): DeleteQuery = {
-      s"""DELETE FROM mobiles WHERE mobile_id = '$id';
+      s"""DELETE FROM mobiles WHERE mobile_id = '$id'
          |""".stripMargin
     }
 
     def deleteAllQuery(): DeleteQuery = {
-      """TRUNCATE TABLE mobiles;"""
+      """TRUNCATE TABLE mobiles"""
     }
 
     def updateByIdQuery(): UpdateQuery = {
