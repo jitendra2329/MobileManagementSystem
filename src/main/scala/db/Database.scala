@@ -7,9 +7,9 @@ import scalikejdbc.{DB, DBSession, SQL}
 
 import scala.util.{Failure, Success, Try}
 
-class Database extends Dao {
+class Database(dbConnection: Connection) extends Dao {
 
-  implicit val session: DBSession = Connection.session
+  implicit val session: DBSession = dbConnection.session
 
   override def createNewUser(user: UserForm): List[User] = {
     val result: List[User] = DB readOnly { implicit session =>

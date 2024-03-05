@@ -6,7 +6,6 @@ import org.flywaydb.core.api.output.MigrateResult
 
 import scala.util.Try
 
-
 class Flyway(dbConfig: DbConfig) {
 
   private val flyway = Flyway.configure()

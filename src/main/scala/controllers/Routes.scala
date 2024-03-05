@@ -8,7 +8,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.util.Timeout
 import models._
-import services.{MobileService, MobileServiceImple}
+import services.MobileService
 import spray.json._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -41,9 +41,8 @@ private object MobileRoutesImplementation extends DefaultJsonProtocol {
   implicit val userWithMobileFormat: RootJsonFormat[UsersMobile] = jsonFormat3(UsersMobile)
 }
 
-class MobileRoutesImplementation extends MobileRoutes {
+class MobileRoutesImplementation(mobileService: MobileService) extends MobileRoutes {
 
-  private val mobileService: MobileService = new MobileServiceImple
   implicit val defaultTimeout: Timeout = Timeout(2 seconds)
 
   import MobileRoutesImplementation._
@@ -143,19 +142,17 @@ class MobileRoutesImplementation extends MobileRoutes {
   }
 }
 
-
 object Routes extends DefaultJsonProtocol {
   implicit val mobileFormFormat: RootJsonFormat[MobileForm] = jsonFormat4(MobileForm)
   implicit val mobileUpdateFormFormat: RootJsonFormat[MobileUpdateForm] = jsonFormat1(MobileUpdateForm)
   implicit val userFormFormat: RootJsonFormat[UserForm] = jsonFormat1(UserForm)
 }
 
-class Routes {
-
-  implicit val actorSystem: ActorSystem = ActorSystem("system")
-  private val mobileRoutes: MobileRoutes = new MobileRoutesImplementation
+class Routes(mobileRoutes: MobileRoutes) {
 
   import Routes._
+  implicit val actorSystem: ActorSystem = ActorSystem("system")
+
 
   private val routes: Route =
     path("api" / "mobile" / IntNumber) { (id: Int) =>

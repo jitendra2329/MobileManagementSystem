@@ -1,7 +1,6 @@
 package services
 
 import dao.Dao
-import db.Database
 import models._
 
 trait MobileService {
@@ -15,9 +14,10 @@ trait MobileService {
   def deleteById(id: Int): Option[String]
   def updateById(id: Int, newPriceToUpdate: Double): Option[String]
 }
-class MobileServiceImple extends MobileService {
 
-  private val database: Dao = new Database
+class MobileServiceImple(database: Dao) extends MobileService {
+
+//  private val database: Dao = new Database
   override def getAllUsers: List[User] = database.getAllUsers
 
   override def getUsersMobile(userId: Int): List[UsersMobile] = database.getUsersMobile(userId)

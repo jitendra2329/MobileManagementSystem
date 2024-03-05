@@ -4,7 +4,7 @@ import com.typesafe.config.ConfigFactory
 import models.DbConfig
 import scalikejdbc._
 
-object Connection {
+class Connection {
   // Load configurations from application.conf
   private val config = ConfigFactory.load()
 
