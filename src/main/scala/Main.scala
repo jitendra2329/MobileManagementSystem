@@ -1,8 +1,7 @@
 import controllers.{MobileRoutes, MobileRoutesImplementation, Routes}
 import dao.{MobileDao, UserDao}
 import db.Connection
-import db.mobilesRepo.MobileDaoImpl
-import db.usersRepo.UsersDaoImpl
+import repo.{MobileDaoImpl, UsersDaoImpl}
 import services.{MobileService, MobileServiceImple}
 
 import scala.annotation.unused
@@ -12,14 +11,14 @@ object Main extends App {
 
   val dbConnection = new Connection
 
-  private val mobileDao: MobileDao = new MobileDaoImpl(dbConnection)
-  private val userDao: UserDao = new UsersDaoImpl(dbConnection)
-  private val mobileService: MobileService = new MobileServiceImple(mobileDao, userDao)
-  private val mobileRoutes: MobileRoutes = new MobileRoutesImplementation(mobileService)
-  private val routes: Routes = new Routes(mobileRoutes)
+   val mobileDao: MobileDao = new MobileDaoImpl(dbConnection)
+   val userDao: UserDao = new UsersDaoImpl(dbConnection)
+   val mobileService: MobileService = new MobileServiceImple(mobileDao, userDao)
+   val mobileRoutes: MobileRoutes = new MobileRoutesImplementation(mobileService)
+   val routes: Routes = new Routes(mobileRoutes)
 
   @unused
-  private val server = routes.server
+   val server = routes.server
 
   println("Server is running on http://localhost:9000")
   StdIn.readLine()

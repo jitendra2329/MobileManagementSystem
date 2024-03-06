@@ -1,3 +1,5 @@
+import com.typesafe.config.ConfigFactory
+
 ThisBuild / version := "0.1.0-SNAPSHOT"
 
 ThisBuild / scalaVersion := "2.13.13"
@@ -6,6 +8,7 @@ enablePlugins(FlywayPlugin)
 
 
 // Flyway configuration
+
 flywayDriver := "org.postgresql.Driver"
 flywayUrl := "jdbc:postgresql://localhost:5432/mobiledb"
 flywayUser := "postgres"

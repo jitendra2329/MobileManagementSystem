@@ -1,4 +1,4 @@
-package db.mobilesRepo
+package repo
 
 import dao.MobileDao
 import db.Connection

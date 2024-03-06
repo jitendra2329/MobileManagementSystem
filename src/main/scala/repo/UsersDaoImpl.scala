@@ -1,4 +1,4 @@
-package db.usersRepo
+package repo
 
 import dao.UserDao
 import db.Connection

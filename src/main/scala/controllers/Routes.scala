@@ -35,17 +35,9 @@ trait MobileRoutes {
 
 }
 
-private object MobileRoutesImplementation extends DefaultJsonProtocol {
-  implicit val mobileFormat: RootJsonFormat[Mobile] = jsonFormat4(Mobile)
-  implicit val userFormat: RootJsonFormat[User] = jsonFormat2(User)
-  implicit val userWithMobileFormat: RootJsonFormat[UsersMobile] = jsonFormat3(UsersMobile)
-}
-
 class MobileRoutesImplementation(mobileService: MobileService) extends MobileRoutes {
 
   implicit val defaultTimeout: Timeout = Timeout(2 seconds)
-
-  import MobileRoutesImplementation._
 
   override def getMobile(id: Int): Future[HttpEntity.Strict] = {
     Future(
@@ -142,15 +134,8 @@ class MobileRoutesImplementation(mobileService: MobileService) extends MobileRou
   }
 }
 
-object Routes extends DefaultJsonProtocol {
-  implicit val mobileFormFormat: RootJsonFormat[MobileForm] = jsonFormat4(MobileForm)
-  implicit val mobileUpdateFormFormat: RootJsonFormat[MobileUpdateForm] = jsonFormat1(MobileUpdateForm)
-  implicit val userFormFormat: RootJsonFormat[UserForm] = jsonFormat1(UserForm)
-}
-
 class Routes(mobileRoutes: MobileRoutes) {
 
-  import Routes._
   implicit val actorSystem: ActorSystem = ActorSystem("system")
 
 

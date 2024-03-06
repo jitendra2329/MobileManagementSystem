@@ -1,7 +1,6 @@
 package db
 
 import com.typesafe.config.ConfigFactory
-import models.DbConfig
 import scalikejdbc._
 
 class Connection {
@@ -28,5 +27,4 @@ class Connection {
 
   // Provide DB session for executing queries
   val session: DBSession = AutoSession
-  val dbConfig: DbConfig = DbConfig(driver, url, user, password)
 }
