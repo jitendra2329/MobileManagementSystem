@@ -1,22 +1,16 @@
-package db
+package db.mobilesRepo
 
-import dao.Dao
+import dao.MobileDao
+import db.Connection
 import models._
 import parsers.Parser
 import scalikejdbc.{DB, DBSession, SQL}
 
 import scala.util.{Failure, Success, Try}
 
-class Database(dbConnection: Connection) extends Dao {
+class MobileDaoImpl(dbConnection: Connection) extends MobileDao {
 
   implicit val session: DBSession = dbConnection.session
-
-  override def createNewUser(user: UserForm): List[User] = {
-    val result: List[User] = DB readOnly { implicit session =>
-      SQL(BaseQuery.userInsertQuery(user.userName)).map(rs => Parser.parseUser(rs)).list()
-    }
-    result
-  }
 
   override def createNewMobile(mobile: MobileForm): List[Mobile] = {
     val result: List[Mobile] = DB readOnly { implicit session =>
@@ -80,23 +74,6 @@ class Database(dbConnection: Connection) extends Dao {
     }
   }
 
-  override def getAllUsers: List[User] = {
-    val result: List[User] = DB readOnly { implicit session =>
-      val res = SQL(BaseQuery.userSelectQuery()).map(rs => Parser.parseUser(rs)).list()
-      res
-    }
-    result
-  }
-
-  override def getUsersMobile(userId: Int): List[UsersMobile] = {
-    val result: List[UsersMobile] = DB readOnly { implicit session =>
-      val res = SQL(BaseQuery.userWithMobileSelectQuery(userId)).map(rs => Parser.parseUsersMobile(rs)).list()
-      res
-    }
-    result
-  }
-
-
   private object BaseQuery {
 
     private type InsertQuery = String
@@ -104,14 +81,7 @@ class Database(dbConnection: Connection) extends Dao {
     private type UpdateQuery = String
     private type DeleteQuery = String
 
-    def userInsertQuery(userName: String): InsertQuery = {
-      s"""INSERT INTO users(user_name)
-         |VALUES (
-         |'${userName}'
-         |)
-         |RETURNING *
-         |""".stripMargin
-    }
+
 
     def insertQuery(mobileForm: MobileForm): InsertQuery = {
       s"""INSERT INTO mobiles(mobile_name, mobile_model, mobile_price, user_id)
@@ -143,26 +113,6 @@ class Database(dbConnection: Connection) extends Dao {
          |mobile_price
          |FROM mobiles
          |where mobile_id = '$id';
-         |""".stripMargin
-    }
-
-    def userSelectQuery(): SelectQuery = {
-      """SELECT
-        |user_id,
-        |user_name
-        |FROM users
-        |""".stripMargin
-    }
-
-    def userWithMobileSelectQuery(userId: Int): SelectQuery = {
-      s"""SELECT
-         |m.mobile_id,
-         |m.mobile_name,
-         |m.mobile_model
-         |FROM mobiles m
-         |JOIN users u
-         |ON u.user_id = m.user_id
-         |WHERE m.user_id = '$userId'
          |""".stripMargin
     }
 

@@ -1,5 +1,8 @@
 import controllers.{MobileRoutes, MobileRoutesImplementation, Routes}
-import db.{Connection, Database}
+import dao.{MobileDao, UserDao}
+import db.Connection
+import db.mobilesRepo.MobileDaoImpl
+import db.usersRepo.UsersDaoImpl
 import flyway.Flyway
 import models.DbConfig
 import services.{MobileService, MobileServiceImple}
@@ -15,8 +18,9 @@ object Main extends App {
   private val flywayMigration = new Flyway(DbConfig(dbConfig.driver, dbConfig.url, dbConfig.user, dbConfig.pass))
   flywayMigration.migrateDatabase()
 
-  private val db: Database = new Database(dbConnection)
-  private val mobileService: MobileService = new MobileServiceImple(db)
+  private val mobileDao: MobileDao = new MobileDaoImpl(dbConnection)
+  private val userDao: UserDao = new UsersDaoImpl(dbConnection)
+  private val mobileService: MobileService = new MobileServiceImple(mobileDao, userDao)
   private val mobileRoutes: MobileRoutes = new MobileRoutesImplementation(mobileService)
   private val routes: Routes = new Routes(mobileRoutes)
 

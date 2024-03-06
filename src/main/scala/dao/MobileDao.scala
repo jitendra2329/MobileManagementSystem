@@ -2,7 +2,7 @@ package dao
 
 import models._
 
-trait Dao {
+trait MobileDao {
 
   def createNewMobile(mobile: MobileForm): List[Mobile]
 
@@ -15,10 +15,4 @@ trait Dao {
   def deleteAll(): Option[String]
 
   def updateById(id: Int, newPriceToUpdate: Double): Option[String]
-
-  def createNewUser(user: UserForm): List[User]
-
-  def getAllUsers: List[User]
-
-  def getUsersMobile(userId: Int): List[UsersMobile]
 }
