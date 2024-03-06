@@ -2,7 +2,14 @@ ThisBuild / version := "0.1.0-SNAPSHOT"
 
 ThisBuild / scalaVersion := "2.13.13"
 
-//enablePlugins(FlywayPlugin)
+enablePlugins(FlywayPlugin)
+
+
+// Flyway configuration
+flywayDriver := "org.postgresql.Driver"
+flywayUrl := "jdbc:postgresql://localhost:5432/mobiledb"
+flywayUser := "postgres"
+flywayPassword := "123456789"
 
 lazy val root = (project in file("."))
   .settings(
@@ -33,4 +40,4 @@ libraryDependencies += "org.postgresql" % "postgresql" % "42.7.1"
 libraryDependencies += "com.typesafe.akka" %% "akka-http" % "10.6.0"
 
 // https://mvnrepository.com/artifact/org.flywaydb/flyway-core
-libraryDependencies += "org.flywaydb" % "flyway-core" % "8.5.6"
+//libraryDependencies += "org.flywaydb" % "flyway-core" % "8.5.6"

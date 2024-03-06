@@ -3,8 +3,6 @@ import dao.{MobileDao, UserDao}
 import db.Connection
 import db.mobilesRepo.MobileDaoImpl
 import db.usersRepo.UsersDaoImpl
-import flyway.Flyway
-import models.DbConfig
 import services.{MobileService, MobileServiceImple}
 
 import scala.annotation.unused
@@ -13,10 +11,6 @@ import scala.io.StdIn
 object Main extends App {
 
   val dbConnection = new Connection
-  val dbConfig = dbConnection.dbConfig
-
-  private val flywayMigration = new Flyway(DbConfig(dbConfig.driver, dbConfig.url, dbConfig.user, dbConfig.pass))
-  flywayMigration.migrateDatabase()
 
   private val mobileDao: MobileDao = new MobileDaoImpl(dbConnection)
   private val userDao: UserDao = new UsersDaoImpl(dbConnection)
