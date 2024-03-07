@@ -19,6 +19,8 @@ trait MobileService {
   def deleteById(id: Int): Option[String]
 
   def updateById(id: Int, newPriceToUpdate: Double): Option[String]
+
+  def deleteUserById(userId: Int): Option[String]
 }
 
 class MobileServiceImple(mobileDao: MobileDao, userDao: UserDao) extends MobileService {
@@ -38,4 +40,6 @@ class MobileServiceImple(mobileDao: MobileDao, userDao: UserDao) extends MobileS
   override def deleteById(id: Int): Option[String] = mobileDao.deleteById(id)
 
   override def updateById(id: Int, newPriceToUpdate: Double): Option[String] = mobileDao.updateById(id, newPriceToUpdate)
+
+  override def deleteUserById(userId: Int): Option[String] = userDao.deleteUserById(userId)
 }

@@ -8,9 +8,9 @@ case class MobileForm(name: String, model: String, price: Double, userId: Int)
 
 case class MobileUpdateForm(price: Double)
 
-case class UserForm(userName: String)
+case class UserForm(userName: String, role: String)
 
-case class User(userId: Int, userName: String)
+case class User(userId: Int, userName: String, userRole: String)
 
 case class UsersMobile(mobileId: Int, mobileName: String, mobileModel: String)
 
@@ -19,7 +19,7 @@ object Mobile extends DefaultJsonProtocol {
 }
 
 object User extends DefaultJsonProtocol {
-  implicit val userFormat: RootJsonFormat[User] = jsonFormat2(User.apply)
+  implicit val userFormat: RootJsonFormat[User] = jsonFormat3(User.apply)
 }
 
 object MobileForm extends DefaultJsonProtocol {
@@ -27,7 +27,7 @@ object MobileForm extends DefaultJsonProtocol {
 }
 
 object UserForm extends DefaultJsonProtocol {
-  implicit val userFormFormat: RootJsonFormat[UserForm] = jsonFormat1(UserForm.apply)
+  implicit val userFormFormat: RootJsonFormat[UserForm] = jsonFormat2(UserForm.apply)
 }
 
 object UsersMobile extends DefaultJsonProtocol {

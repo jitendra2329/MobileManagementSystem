@@ -33,6 +33,8 @@ trait MobileRoutes {
 
   def updateById(mobileId: Int, priceToUpdate: Double): Future[HttpEntity.Strict]
 
+  def deleteUserById(userId: Int): Future[HttpEntity.Strict]
+
 }
 
 class MobileRoutesImplementation(mobileService: MobileService) extends MobileRoutes {
@@ -132,6 +134,23 @@ class MobileRoutesImplementation(mobileService: MobileService) extends MobileRou
           ))
     }
   }
+
+  def deleteUserById(userId: Int): Future[HttpEntity.Strict] = {
+    mobileService.deleteUserById(userId) match {
+      case Some(value) =>
+        Future(
+          HttpEntity(
+            ContentTypes.`text/plain(UTF-8)`,
+            value
+          ))
+      case None =>
+        Future(
+          HttpEntity(
+            ContentTypes.`text/plain(UTF-8)`,
+            "No row is deleted!"
+          ))
+    }
+  }
 }
 
 class Routes(mobileRoutes: MobileRoutes) {
@@ -175,9 +194,13 @@ class Routes(mobileRoutes: MobileRoutes) {
               complete(StatusCodes.OK,
                 mobileRoutes.createUser(user)
               )
-
             }
           }
+      } ~
+      path("api" / "user" / IntNumber) { userId =>
+        delete {
+          complete(StatusCodes.OK, mobileRoutes.deleteUserById(userId))
+        }
       } ~
       path("api" / "user" / "mobile" / IntNumber) { userId =>
         get {

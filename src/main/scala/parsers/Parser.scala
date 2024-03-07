@@ -10,7 +10,7 @@ object Parser {
   }
 
   def parseUser(rs: WrappedResultSet): User = {
-    User(rs.int("user_id"), rs.string("user_name"))
+    User(rs.int("user_id"), rs.string("user_name"), rs.string("role"))
   }
 
   def parseUsersMobile(rs: WrappedResultSet): UsersMobile = {

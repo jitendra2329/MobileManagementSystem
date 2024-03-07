@@ -6,6 +6,7 @@ import models.{User, UserForm, UsersMobile}
 import parsers.Parser
 import scalikejdbc.{DB, DBSession, SQL}
 
+import scala.util.{Failure, Success, Try}
 
 class UsersDaoImpl(dbConnection: Connection) extends UserDao {
 
@@ -13,7 +14,7 @@ class UsersDaoImpl(dbConnection: Connection) extends UserDao {
 
   override def createNewUser(user: UserForm): List[User] = {
     val result: List[User] = DB readOnly { implicit session =>
-      SQL(BaseQuery.insertQuery(user.userName)).map(rs => Parser.parseUser(rs)).list()
+      SQL(BaseQuery.insertQuery(user)).map(rs => Parser.parseUser(rs)).list()
     }
     result
   }
@@ -35,6 +36,18 @@ class UsersDaoImpl(dbConnection: Connection) extends UserDao {
     result
   }
 
+  override def deleteUserById(userId: Int): Option[String] = {
+    Try(DB autoCommit { implicit session =>
+      println("Inside delete by id method.")
+      SQL(BaseQuery.deleteByIdQuery(userId)).executeUpdate()
+    }) match {
+      case Failure(_) =>
+        None
+      case Success(value) => if (value != 0) Some(s"$value row Deleted!") else Some("No record exists!")
+    }
+  }
+
+
   private object BaseQuery {
 
     private type InsertQuery = String
@@ -42,10 +55,11 @@ class UsersDaoImpl(dbConnection: Connection) extends UserDao {
     private type UpdateQuery = String
     private type DeleteQuery = String
 
-    def insertQuery(userName: String): InsertQuery = {
-      s"""INSERT INTO users(user_name)
+    def insertQuery(user: UserForm): InsertQuery = {
+      s"""INSERT INTO users(user_name, role)
          |VALUES (
-         |'${userName}'
+         |'${user.userName}',
+         |'${user.role}'::user_roles
          |)
          |RETURNING *
          |""".stripMargin
@@ -54,7 +68,8 @@ class UsersDaoImpl(dbConnection: Connection) extends UserDao {
     def selectQuery(): SelectQuery = {
       """SELECT
         |user_id,
-        |user_name
+        |user_name,
+        |role
         |FROM users
         |""".stripMargin
     }
@@ -68,6 +83,11 @@ class UsersDaoImpl(dbConnection: Connection) extends UserDao {
          |JOIN users u
          |ON u.user_id = m.user_id
          |WHERE m.user_id = '$userId'
+         |""".stripMargin
+    }
+
+    def deleteByIdQuery(userId: Int): DeleteQuery = {
+      s"""DELETE FROM users WHERE user_id = '$userId'
          |""".stripMargin
     }
   }
