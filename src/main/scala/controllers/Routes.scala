@@ -42,113 +42,129 @@ class MobileRoutesImplementation(mobileService: MobileService) extends MobileRou
   implicit val defaultTimeout: Timeout = Timeout(2 seconds)
 
   override def getMobile(id: Int): Future[HttpEntity.Strict] = {
-    Future(
+    for {
+      mob <- mobileService.getMobileById(id)
+    } yield {
       HttpEntity(
         ContentTypes.`application/json`,
-        mobileService.getMobileById(id).toJson.prettyPrint
+        mob.toJson.prettyPrint
       )
-    )
+    }
   }
 
   override def getAllMobiles: Future[HttpEntity.Strict] = {
-    Future(
+    for {
+      mob <- mobileService.getAllMobiles
+    } yield {
       HttpEntity(
         ContentTypes.`application/json`,
-        mobileService.getAllMobiles.toJson.prettyPrint
+        mob.toJson.prettyPrint
+
       )
-    )
+    }
   }
 
   override def createMobile(mobileForm: MobileForm): Future[HttpEntity.Strict] = {
     val mobileList = mobileService.createMobile(mobileForm)
 
-    Future(
+    for {
+      mob <- mobileList
+    } yield {
       HttpEntity(
         ContentTypes.`text/plain(UTF-8)`,
-        s"New mobile is added into the db with id: ${mobileList.head.id}"
+        s"New mobile is added into the db with id: ${mob.head.id}"
       )
-    )
+    }
   }
 
   override def createUser(userForm: UserForm): Future[HttpEntity.Strict] = {
     val userList = mobileService.createUser(userForm)
-
-    Future(
+    for {
+      user <- userList
+    } yield {
       HttpEntity(
         ContentTypes.`text/plain(UTF-8)`,
-        s"New mobile is added into the db with id: ${userList.head.userId}"
+        s"New mobile is added into the db with id: ${user.head.userId}"
       )
-    )
-
+    }
   }
 
   override def getAllUsers: Future[HttpEntity.Strict] = {
-    Future(
+    for {
+      user <- mobileService.getAllUsers
+    } yield {
       HttpEntity(
         ContentTypes.`application/json`,
-        mobileService.getAllUsers.toJson.prettyPrint
+        user.toJson.prettyPrint
       )
-    )
+    }
   }
 
   override def getUsersMobile(userId: Int): Future[HttpEntity.Strict] = {
-    Future(
+    for {
+      user <- mobileService.getUsersMobile(userId)
+    } yield {
       HttpEntity(
         ContentTypes.`application/json`,
-        mobileService.getUsersMobile(userId).toJson.prettyPrint
+        user.toJson.prettyPrint
       )
-    )
+    }
   }
 
   override def deleteById(mobileId: Int): Future[HttpEntity.Strict] = {
-    mobileService.deleteById(mobileId) match {
-      case Some(value) =>
-        Future(
+    for {
+      mob <- mobileService.deleteById(mobileId)
+    } yield {
+      mob match {
+        case Some(value) =>
           HttpEntity(
             ContentTypes.`text/plain(UTF-8)`,
             value
-          ))
-      case None =>
-        Future(
+          )
+        case None =>
           HttpEntity(
             ContentTypes.`text/plain(UTF-8)`,
             "No row is deleted!"
-          ))
+          )
+      }
     }
-
   }
 
   override def updateById(mobileId: Int, priceToUpdate: Double): Future[HttpEntity.Strict] = {
-    mobileService.updateById(mobileId, priceToUpdate) match {
-      case Some(value) =>
-        Future(
+    for {
+      mob <- mobileService.updateById(mobileId, priceToUpdate)
+    } yield {
+      mob match {
+        case Some(value) =>
           HttpEntity(
             ContentTypes.`text/plain(UTF-8)`,
             value
-          ))
-      case None =>
-        Future(
+          )
+        case None =>
           HttpEntity(
             ContentTypes.`text/plain(UTF-8)`,
             "No row is updated!"
-          ))
+          )
+      }
     }
   }
 
   def deleteUserById(userId: Int): Future[HttpEntity.Strict] = {
-    mobileService.deleteUserById(userId) match {
-      case Some(value) =>
-        Future(
+    for {
+      user <- mobileService.deleteUserById(userId)
+    } yield {
+      user match {
+        case Some(value) =>
           HttpEntity(
             ContentTypes.`text/plain(UTF-8)`,
             value
-          ))
-      case None =>
-        Future(
+          )
+        case None =>
           HttpEntity(
             ContentTypes.`text/plain(UTF-8)`,
             "No row is deleted!"
-          ))
+          )
+      }
     }
   }
 }

@@ -6,20 +6,22 @@ import models._
 import parsers.Parser
 import scalikejdbc.{DB, DBSession, SQL}
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
 class MobileDaoImpl(dbConnection: Connection) extends MobileDao {
 
   implicit val session: DBSession = dbConnection.session
 
-  override def createNewMobile(mobile: MobileForm): List[Mobile] = {
+  override def createNewMobile(mobile: MobileForm): Future[List[Mobile]] = Future {
     val result: List[Mobile] = DB readOnly { implicit session =>
       SQL(BaseQuery.insertQuery(mobile)).map(rs => Parser.parseMobile(rs)).list()
     }
     result
   }
 
-  override def getMobiles: List[Mobile] = {
+  override def getMobiles: Future[List[Mobile]] = Future {
     val result: List[Mobile] = DB readOnly { implicit session =>
       println("inside the fetchData method")
       val res = SQL(BaseQuery.selectAllQuery).map(rs => Parser.parseMobile(rs)).list()
@@ -28,7 +30,7 @@ class MobileDaoImpl(dbConnection: Connection) extends MobileDao {
     result
   }
 
-  override def getMobileById(id: Int): List[Mobile] = {
+  override def getMobileById(id: Int): Future[List[Mobile]] = Future {
     val result: List[Mobile] = DB readOnly { implicit session =>
       println("inside the fetchData method")
       val res = SQL(BaseQuery.selectByIdQuery(id)).map(rs => Parser.parseMobile(rs)).list()
@@ -37,7 +39,7 @@ class MobileDaoImpl(dbConnection: Connection) extends MobileDao {
     result
   }
 
-  override def deleteById(id: Int): Option[String] = {
+  override def deleteById(id: Int): Future[Option[String]]= Future {
     Try(DB autoCommit { implicit session =>
       println("Inside delete by id method.")
       SQL(BaseQuery.deleteByIdQuery(id)).executeUpdate()
@@ -48,7 +50,7 @@ class MobileDaoImpl(dbConnection: Connection) extends MobileDao {
     }
   }
 
-  override def deleteAll(): Option[String] = {
+  override def deleteAll(): Future[Option[String]] =  Future {
     Try(DB autoCommit { implicit session =>
       println("Inside deleteAll method.")
       SQL(BaseQuery.deleteAllQuery()).executeUpdate()
@@ -59,7 +61,7 @@ class MobileDaoImpl(dbConnection: Connection) extends MobileDao {
     }
   }
 
-  override def updateById(id: Int, newPriceToUpdate: Double): Option[String] = {
+  override def updateById(id: Int, newPriceToUpdate: Double): Future[Option[String]] = Future {
 
     Try {
       DB autoCommit { implicit session =>

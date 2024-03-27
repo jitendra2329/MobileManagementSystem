@@ -6,13 +6,15 @@ import models.{User, UserForm, UsersMobile}
 import parsers.Parser
 import scalikejdbc.{DB, DBSession, SQL}
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
 class UsersDaoImpl(dbConnection: Connection) extends UserDao {
 
   implicit val session: DBSession = dbConnection.session
 
-  override def createNewUser(user: UserForm): List[User] = {
+  override def createNewUser(user: UserForm): Future[List[User]] = Future {
     val result: List[User] = DB readOnly { implicit session =>
       SQL(BaseQuery.insertQuery(user)).map(rs => Parser.parseUser(rs)).list()
     }
@@ -20,7 +22,7 @@ class UsersDaoImpl(dbConnection: Connection) extends UserDao {
   }
 
 
-  override def getAllUsers: List[User] = {
+  override def getAllUsers: Future[List[User]] = Future {
     val result: List[User] = DB readOnly { implicit session =>
       val res = SQL(BaseQuery.selectQuery()).map(rs => Parser.parseUser(rs)).list()
       res
@@ -28,7 +30,7 @@ class UsersDaoImpl(dbConnection: Connection) extends UserDao {
     result
   }
 
-  override def getUsersMobile(userId: Int): List[UsersMobile] = {
+  override def getUsersMobile(userId: Int): Future[List[UsersMobile]] = Future {
     val result: List[UsersMobile] = DB readOnly { implicit session =>
       val res = SQL(BaseQuery.usersMobileSelectQuery(userId)).map(rs => Parser.parseUsersMobile(rs)).list()
       res
@@ -36,7 +38,7 @@ class UsersDaoImpl(dbConnection: Connection) extends UserDao {
     result
   }
 
-  override def deleteUserById(userId: Int): Option[String] = {
+  override def deleteUserById(userId: Int): Future[Option[String]] = Future {
     Try(DB autoCommit { implicit session =>
       println("Inside delete by id method.")
       SQL(BaseQuery.deleteByIdQuery(userId)).executeUpdate()
