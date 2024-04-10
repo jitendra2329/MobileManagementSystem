@@ -2,17 +2,19 @@ package dao
 
 import models._
 
+import scala.concurrent.Future
+
 trait MobileDao {
 
-  def createNewMobile(mobile: MobileForm): List[Mobile]
+  def createNewMobile(mobile: MobileForm): Future[List[Mobile]]
 
-  def getMobiles: List[Mobile]
+  def getMobiles: Future[List[Mobile]]
 
-  def getMobileById(id: Int): List[Mobile]
+  def getMobileById(id: Int): Future[List[Mobile]]
 
-  def deleteById(id: Int): Option[String]
+  def deleteById(id: Int): Future[Option[String]]
 
-  def deleteAll(): Option[String]
+  def deleteAll(): Future[Option[String]]
 
-  def updateById(id: Int, newPriceToUpdate: Double): Option[String]
+  def updateById(id: Int, newPriceToUpdate: Double): Future[Option[String]]
 }

@@ -10,9 +10,9 @@ enablePlugins(FlywayPlugin)
 // Flyway configuration
 
 flywayDriver := "org.postgresql.Driver"
-flywayUrl := "jdbc:postgresql://localhost:5432/mobiledb"
+flywayUrl := "jdbc:postgresql://localhost:5432/postgres"
 flywayUser := "postgres"
-flywayPassword := "123456789"
+flywayPassword := "admin"
 
 lazy val root = (project in file("."))
   .settings(
